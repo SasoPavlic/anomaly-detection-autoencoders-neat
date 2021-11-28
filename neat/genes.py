@@ -82,6 +82,8 @@ class DefaultNodeGene(BaseGene):
                         StringAttribute('activation', options='sigmoid'),
                         StringAttribute('aggregation', options='sum')]
 
+    hidden = False
+
     def __init__(self, key):
         assert isinstance(key, int), "DefaultNodeGene key must be an int, not {!r}".format(key)
         BaseGene.__init__(self, key)

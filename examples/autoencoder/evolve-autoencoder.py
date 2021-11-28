@@ -147,7 +147,7 @@ if __name__ == '__main__':
     anomaly_detection = AnomalyDetection(X_test, y_test, [1], [0])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, debug=True, generations=50, visualize=True, ensemble=True,
+    neat_outlier = NeatOutlier(config, debug=True, generations=5, visualize=True, ensemble=True,
                                sensitivity=0.8)
     neat_outlier.fit(X_train)
 

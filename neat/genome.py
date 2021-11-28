@@ -584,9 +584,11 @@ class DefaultGenome(object):
         return s
 
     @staticmethod
-    def create_node(config, node_id):
+    def create_node(config, node_id, hidden):
         node = config.node_gene_type(node_id)
         node.init_attributes(config)
+        if hidden:
+            node.hidden = hidden
         return node
 
     @staticmethod
@@ -706,10 +708,10 @@ class AutoencoderGenome(DefaultGenome):
     def configure_new(self, config):
 
         for node_key in config.encoder_output_keys:
-            self.encoder.nodes[node_key] = self.create_node(config, node_key)
+            self.encoder.nodes[node_key] = self.create_node(config, node_key, False)
 
         for node_key in config.decoder_output_keys:
-            self.decoder.nodes[node_key] = self.create_node(config, node_key)
+            self.decoder.nodes[node_key] = self.create_node(config, node_key, False)
 
         if config.num_hidden > 0:
 
@@ -721,14 +723,16 @@ class AutoencoderGenome(DefaultGenome):
                 node_key = config.get_new_node_key(used_keys)
                 assert node_key not in self.encoder.nodes
                 assert node_key not in self.decoder.nodes
-                node = self.create_node(config, node_key)
+                node = self.create_node(config, node_key, True)
+                print(f"Encoder hidden node key{node_key}")
                 self.encoder.nodes[node_key] = node
                 used_keys.append(node_key)
             for i in range(config.num_hidden):
                 node_key = config.get_new_node_key(used_keys)
                 assert node_key not in self.encoder.nodes
                 assert node_key not in self.decoder.nodes
-                node = self.create_node(config, node_key)
+                node = self.create_node(config, node_key, True)
+                print(f"Decoder hidden node key{node_key}")
                 self.decoder.nodes[node_key] = node
                 used_keys.append(node_key)
 
@@ -887,7 +891,7 @@ class AutoencoderGenome(DefaultGenome):
         side = choice([self.encoder, self.decoder])
         conn_to_split = choice(list(side.connections.values()))
         new_node_id = config.get_new_node_key(side.nodes)
-        ng = self.create_node(config, new_node_id)
+        ng = self.create_node(config, new_node_id, False)
         side.nodes[new_node_id] = ng
 
         conn_to_split.enabled = False
