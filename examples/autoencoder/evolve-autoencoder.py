@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.base import OutlierMixin
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors._base import UnsupervisedMixin
@@ -13,10 +14,11 @@ from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 
 """
 Constants:
-    - MAX_ACCUARCY depends on choosen dataset, try to manualy tweak it.
+    - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
 """
 
 MAX_ACCURACY = 2000
+
 
 def eval_genomes(genomes, config, X):
     global current_best_accuracy
@@ -28,6 +30,7 @@ def eval_genomes(genomes, config, X):
             reconstructed = decoder.activate(bottleneck_output)
             for expected, output in zip(input, reconstructed):
                 accuracy -= (expected - output) ** 2
+
         genome.fitness = accuracy
 
 
@@ -65,12 +68,12 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
         # visualize.plot_slider(X, self.encoder, self.decoder, view=True)
 
         visualize.draw_net_encoder(config, winner.encoder, True,
-                           node_colors={key: 'yellow' for key in winner.encoder.nodes},
-                           show_disabled=True)
+                                   node_colors={key: 'yellow' for key in winner.encoder.nodes},
+                                   show_disabled=True)
 
         visualize.draw_net_decoder(config, winner.decoder, True,
-                           node_colors={key: 'yellow' for key in winner.decoder.nodes},
-                           show_disabled=True)
+                                   node_colors={key: 'yellow' for key in winner.decoder.nodes},
+                                   show_disabled=True)
 
         visualize.plot_stats(stats, ylog=False, view=True)
         visualize.plot_species(stats, view=True)
@@ -133,36 +136,68 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
 
 if __name__ == '__main__':
     print("Program start...")
-    # Prepare dataset for anomaly detection
-    config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
-                                    neat.DefaultStagnation,'evolve-autoencoder.cfg')
 
-    dataset = datasets.load_iris()
+    """Prepare dataset for anomaly detection based on configuration file"""
+    config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
+                                    neat.DefaultStagnation, 'evolve-autoencoder.cfg')
+
+    """Select the dataset"""
+    dataset = datasets.load_wine()
+    """
+        Since we are interested to perform unsupervised* anomaly detection, we will help
+        the algorithm by reducing the amount of anomalous data instances. By doing this
+        algorithm learn better to encode/decode majority of data (normal instances).
+        As a result minority of data (anomalies) will be reconstructed worst and therefore,
+        they will be more likely to be mark as a true positives anomalies. 
+        
+        *Disclaimer: One could argue that this is in fact a semi-supervised anomaly detection technique...
+    """
+    """All data instances equal to 178"""
+    a = dataset.data[161:]
+    b = dataset.target[161:]
+
     X = dataset.data
+    X = X[:161]
     y = dataset.target
+    y = y[:161]
+
     names = dataset.target_names
     print(f"Anomaly label is for class: {names[config.anomaly_label]}")
 
+    """Plotting the correlation graph for selected dataset"""
+    visualize.plot_heatmap(dataset, True)
+
+    """Link is explaining the bellow step"""
     # https://towardsdatascience.com/what-and-why-behind-fit-transform-vs-transform-in-scikit-learn-78f915cf96fe
     X = StandardScaler().fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-    X_train = X_train[y_train != config.anomaly_label, :]
 
+    """Inserting previously take data instances to test dataset"""
+    X_test = np.append(X_test, a, axis=0)
+    y_test = np.append(y_test, b, axis=0)
 
+    """If supervised anomaly detection is intended, then we can remove anomalies from training"""
+    # X_train = X_train[y_train != config.anomaly_label, :]
+
+    """Turning multiple class data labels to binary"""
     y_test = [0 if yi == config.anomaly_label else 1 for yi in y_test]
 
     anomaly_detection = AnomalyDetection(X_test, y_test, [1], [0])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, debug=True, generations=50, visualize=True, ensemble=True,
+    neat_outlier = NeatOutlier(config, debug=True, generations=500, visualize=True, ensemble=True,
                                sensitivity=0.8)
+
+    """Perform neuroevolution on training dataset"""
     neat_outlier.fit(X_train)
 
     predictions = neat_outlier.predict(X_test)
     acc = accuracy_score(predictions, y_test)
     print(f"Accuracy of winner model is: {acc}")
 
-    roc_curve = anomaly_detection.find(neat_outlier.encoder, neat_outlier.decoder)
+    """Ploting results from anomaly detection on graph"""
+    anomaly_detection.find(neat_outlier.encoder, neat_outlier.decoder)
+    visualize.plot_metrics(anomaly_detection.metrics, True)
 
     print("Program end...")

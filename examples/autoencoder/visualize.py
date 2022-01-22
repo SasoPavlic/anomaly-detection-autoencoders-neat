@@ -2,10 +2,13 @@ from __future__ import print_function
 
 import copy
 import warnings
+import seaborn as sns
+import matplotlib
 from matplotlib.widgets import Slider
 import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 def plot_stats(statistics, ylog=False, view=False, filename='./logs/avg_fitness.svg'):
@@ -39,55 +42,6 @@ def plot_stats(statistics, ylog=False, view=False, filename='./logs/avg_fitness.
     plt.close()
 
 
-def plot_spikes(spikes, view=False, filename=None, title=None):
-    """ Plots the trains for a single spiking neuron. """
-    t_values = [t for t, I, v, u, f in spikes]
-    v_values = [v for t, I, v, u, f in spikes]
-    u_values = [u for t, I, v, u, f in spikes]
-    I_values = [I for t, I, v, u, f in spikes]
-    f_values = [f for t, I, v, u, f in spikes]
-
-    fig = plt.figure()
-    plt.subplot(4, 1, 1)
-    plt.ylabel("Potential (mv)")
-    plt.xlabel("Time (in ms)")
-    plt.grid()
-    plt.plot(t_values, v_values, "g-")
-
-    if title is None:
-        plt.title("Izhikevich's spiking neuron model")
-    else:
-        plt.title("Izhikevich's spiking neuron model ({0!s})".format(title))
-
-    plt.subplot(4, 1, 2)
-    plt.ylabel("Fired")
-    plt.xlabel("Time (in ms)")
-    plt.grid()
-    plt.plot(t_values, f_values, "r-")
-
-    plt.subplot(4, 1, 3)
-    plt.ylabel("Recovery (u)")
-    plt.xlabel("Time (in ms)")
-    plt.grid()
-    plt.plot(t_values, u_values, "r-")
-
-    plt.subplot(4, 1, 4)
-    plt.ylabel("Current (I)")
-    plt.xlabel("Time (in ms)")
-    plt.grid()
-    plt.plot(t_values, I_values, "r-o")
-
-    if filename is not None:
-        plt.savefig(filename)
-
-    if view:
-        plt.show()
-        plt.close()
-        fig = None
-
-    return fig
-
-
 def plot_species(statistics, view=False, filename='./logs/speciation.svg'):
     """ Visualizes speciation throughout evolution. """
     if plt is None:
@@ -112,8 +66,10 @@ def plot_species(statistics, view=False, filename='./logs/speciation.svg'):
 
     plt.close()
 
-def draw_net_encoder(config, genome, view=False, filename='logs/encoder', node_names=None, show_disabled=True, prune_unused=False,
-             node_colors=None, fmt='svg', genome_config=None):
+
+def draw_net_encoder(config, genome, view=False, filename='logs/encoder', node_names=None, show_disabled=True,
+                     prune_unused=False,
+                     node_colors=None, fmt='svg', genome_config=None):
     """ Receives a genome and draws a neural network with arbitrary topology. """
 
     # For Windows OS (location of Graphviz installation)
@@ -189,7 +145,7 @@ def draw_net_encoder(config, genome, view=False, filename='logs/encoder', node_n
 
     for cg in genome.connections.values():
         if cg.enabled or show_disabled:
-            #if cg.input not in used_nodes or cg.output not in used_nodes:
+            # if cg.input not in used_nodes or cg.output not in used_nodes:
             #    continue
             input, output = cg.key
             a = node_names.get(input, str(input))
@@ -203,8 +159,10 @@ def draw_net_encoder(config, genome, view=False, filename='logs/encoder', node_n
 
     return dot
 
-def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_names=None, show_disabled=True, prune_unused=False,
-             node_colors=None, fmt='svg', genome_config=None):
+
+def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_names=None, show_disabled=True,
+                     prune_unused=False,
+                     node_colors=None, fmt='svg', genome_config=None):
     """ Receives a genome and draws a neural network with arbitrary topology. """
 
     # For Windows OS (location of Graphviz installation)
@@ -280,7 +238,7 @@ def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_n
 
     for cg in genome.connections.values():
         if cg.enabled or show_disabled:
-            #if cg.input not in used_nodes or cg.output not in used_nodes:
+            # if cg.input not in used_nodes or cg.output not in used_nodes:
             #    continue
             input, output = cg.key
             a = node_names.get(input, str(input))
@@ -293,6 +251,7 @@ def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_n
     dot.render(filename, view=view)
 
     return dot
+
 
 def plot_slider(inputs, encoder, decoder, view=False, filename='./logs/slider.png'):
     """ Plots the slider for encoder and decoder. """
@@ -322,7 +281,6 @@ def plot_slider(inputs, encoder, decoder, view=False, filename='./logs/slider.pn
     for i, slider in enumerate(decoder_input_sliders):
         slider.on_changed(create_update_func(i))
 
-
     if filename is not None:
         plt.savefig(filename)
 
@@ -332,3 +290,56 @@ def plot_slider(inputs, encoder, decoder, view=False, filename='./logs/slider.pn
         fig = None
 
     return fig
+
+
+def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):
+    list_F1 = list()
+    list_recall = list()
+    list_precision = list()
+    quantiles = list()
+    best_f1 = list()
+    best = 0
+    for metric in metrics:
+        list_F1.append(metric.F1)
+        list_recall.append(metric.recall)
+        list_precision.append(metric.precision)
+        quantiles.append(metric.quantile)
+
+    # plotting the points
+    plt.plot(quantiles, list_F1, label="F1-measure")
+    plt.plot(quantiles, list_recall, label="Recall")
+    plt.plot(quantiles, list_precision, label="Precision ")
+
+    # naming the x axis
+    plt.xlabel('Quantiles')
+    # naming the y axis
+    plt.ylabel('Score')
+
+    # giving a title to my graph
+    plt.title('Effectiveness of anomaly detection')
+
+    plt.legend()
+
+    # function to show the plot
+    plt.savefig(filename)
+    if view:
+        plt.show()
+
+    plt.close()
+
+
+def plot_heatmap(dataset, view=False, filename='./logs/heatmap.png'):
+    df = pd.DataFrame(data=np.c_[dataset['data'], dataset['target']], columns=dataset['feature_names'] + ['target'])
+    print(df.isna().sum())
+
+    corr = df.corr()
+    matplotlib.pyplot.subplots(figsize=(15, 10))
+    sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, annot=True,
+                cmap=sns.diverging_palette(220, 20, as_cmap=True))
+
+    df.describe()
+    plt.savefig(filename)
+    if view:
+        plt.show()
+
+    plt.close()

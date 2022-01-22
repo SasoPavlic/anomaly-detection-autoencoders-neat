@@ -1,4 +1,3 @@
-
 import numpy as np
 from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
@@ -8,8 +7,7 @@ from neat.config import Config
 
 class AnomalyDetectionConfig(Config):
 
-    def __init__(self, AutoencoderGenome,DefaultReproduction, DefaultSpeciesSet, DefaultStagnation, filename):
-
+    def __init__(self, AutoencoderGenome, DefaultReproduction, DefaultSpeciesSet, DefaultStagnation, filename):
         super().__init__(AutoencoderGenome, DefaultReproduction, DefaultSpeciesSet, DefaultStagnation, filename)
 
         config = ConfigParser()
@@ -35,6 +33,15 @@ class Metric(object):
         self.TNR = None
         self.FPR = None
 
+    def evaluate_anomalies(self, TP, FN, FP, TN):
+        """Compute recall, precision and F1-score
+        Returns:
+            Recall, Precision, F1-score
+        """
+        self.recall = (TP / (TP + FN))
+        self.precision = ((TP / (TP + FP)))
+        self.F1 = 2 * ((self.precision * self.recall) / (self.precision + self.recall))
+
     def calculate_confusion_matrix(self, y_test, valid_label, anomaly_label):
         """Compute confusion matrix based on found anomalies in dataset
         """
@@ -50,6 +57,8 @@ class Metric(object):
         self.TNR = (self.TN / (self.TN + self.FP))
         self.FPR = 1 - self.TNR
 
+        self.evaluate_anomalies(self.TP, self.FN, self.FP, self.TN)
+
 
 class AnomalyDetection(object):
 
@@ -63,7 +72,6 @@ class AnomalyDetection(object):
         self.FPR_array = []
         self.TPR_array = []
         self.AUC = None
-
 
     def calculate_roc_curve(self):
         # https://www.analyticsvidhya.com/blog/2020/06/auc-roc-curve-machine-learning/
@@ -90,7 +98,6 @@ class AnomalyDetection(object):
         print(f"Model AUC score: {self.AUC}")
         plt.savefig('./logs/roc-auc.png')
         plt.show()
-
 
     def find(self, encoder, decoder):
         """Compute ROC-AUC values and visualize it in plot
