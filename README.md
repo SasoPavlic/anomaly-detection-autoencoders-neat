@@ -47,7 +47,7 @@ Configure `evolve-autoencoder.cfg` according to your needs.
 
 * ANAD was developed under the supervision
   of [doc. dr Sašo Karakatič](https://ii.feri.um.si/en/person/saso-karakatic-2/)
-  at [University of Maribor](https://www.um.si/en/Pages/default.aspx).
+  at [University of Maribor](https://www.um.si/en/home-page/).
 
 * This code is a fork of [palmettos](https://github.com/palmettos/autoencoders-neat)
   and [CodeReclaimers](https://github.com/CodeReclaimers/neat-python). I am grateful that the authors chose to
