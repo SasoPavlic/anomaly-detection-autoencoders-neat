@@ -1,10 +1,54 @@
-This is a fork of [neat-python](https://github.com/CodeReclaimers/neat-python) with added support for autoencoders with evolvable topologies.
+# autoencoders-neat  for  anomaly  detection(ANAD)
 
-`AutoencoderGenome` creates an encoder and decoder module that can be trained end-to-end.
-`FeedForwardNetwork` has a new factory function, `create_autoencoder`, which takes in an `AutoencoderGenome` and returns an `(encoder: FeedForwardNetwork, decoder: FeedForwardNetwork)` tuple. The `AutoencoderGenome` replaces the `num_output` configuration option with `bottleneck_size`.
-Example code is provided in `test-autoencoder-objective.py` and `test-autoencoder-novelty.py`.
+### Utilizing Autoencoders created by neuroevolution for anomaly detection
 
-For the objective example, once the network has reached a satisfactory fitness, a plot will be shown with sliders that allow you to modify the bottleneck inputs to the decoder module.
+### Description 📝
 
-Why?
-- Because I think it's cool -- but honestly, I'm not sure. I imagined this potentially opening up some routes of experimentation with all the beautiful things available in neuroevolution, like novelty search and multi-objective optimization.
+The proposed method ANAD is designing a topology of autoencoders for anomaly detection.
+
+### What it can do? 👀
+
+* **Construct novel autoencoder's architecture** using neuroevolution based on NEAT algorithm.
+* Allow an **unsupervised machine learning algorithm** to make decisions that mark the threshold between normal and
+  anomalous data instances.
+* **Finds anomalies** in Wine dataset based on configuration parameters
+
+### Requirements ✅
+
+* **Anaconda** enviroment with Python 3.8.x (to run ANAD script).
+* **Setup of project** `pip install .`
+
+### Documentation 📘
+
+This code's paper is currently in the writing stage. If you can't wait, I recommend checking out a similar research, in
+which neural architecture search (NAS) was utilized instead of neuroevolution.
+
+* [Our related work](https://github.com/SasoPavlic/AutoDaedalus)
+
+### Usage 🔨
+
+##### Changing directory
+
+`cd examples/autoencoder`
+
+##### Configurating parameters
+
+Configure `evolve-autoencoder.cfg` according to your needs.
+
+##### Running ANAD script
+
+`python evolve-autoencoder.py`
+
+### HELP ⚠️
+
+**saso.pavlic@student.um.si**
+
+## Acknowledgments 🎓
+
+* ANAD was developed under the supervision
+  of [doc. dr Sašo Karakatič](https://ii.feri.um.si/en/person/saso-karakatic-2/)
+  at [University of Maribor](https://www.um.si/en/Pages/default.aspx).
+
+* This code is a fork of [palmettos](https://github.com/palmettos/autoencoders-neat)
+  and [CodeReclaimers](https://github.com/CodeReclaimers/neat-python). I am grateful that the authors chose to
+  open-source their work for future use.
