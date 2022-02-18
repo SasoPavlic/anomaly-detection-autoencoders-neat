@@ -13,7 +13,7 @@ class AnomalyDetectionConfig(Config):
         config = ConfigParser()
         self.path = filename
         config.read(self.path)
-        self.anomaly_label = int(config.get('AnomalyDetection', 'anomaly_label'))
+        self.anomaly_label = str(config.get('AnomalyDetection', 'anomaly_label'))
 
 
 class Metric(object):

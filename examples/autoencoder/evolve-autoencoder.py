@@ -11,13 +11,14 @@ from sklearn import datasets
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
+import pandas as pd
 
 """
 Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
 """
 
-MAX_ACCURACY = 2000
+MAX_ACCURACY = 92000
 
 
 def eval_genomes(genomes, config, X):
@@ -142,7 +143,11 @@ if __name__ == '__main__':
                                     neat.DefaultStagnation, 'evolve-autoencoder.cfg')
 
     """Select the dataset"""
-    dataset = datasets.load_wine()
+    with open("../../datasets/fault_detection.csv") as f:
+        dataset = pd.read_csv(f, delimiter=";").to_numpy()
+        data = dataset[:, 0:59]
+        target = dataset[:, -1]
+
     """
         Since we are interested to perform unsupervised* anomaly detection, we will help
         the algorithm by reducing the amount of anomalous data instances. By doing this
@@ -152,41 +157,25 @@ if __name__ == '__main__':
         
         *Disclaimer: One could argue that this is in fact a semi-supervised anomaly detection technique...
     """
-    """All data instances equal to 178"""
-    a = dataset.data[161:]
-    b = dataset.target[161:]
 
-    X = dataset.data
-    X = X[:161]
-    y = dataset.target
-    y = y[:161]
-
-    names = dataset.target_names
-    print(f"Anomaly label is for class: {names[config.anomaly_label]}")
-
-    """Plotting the correlation graph for selected dataset"""
-    visualize.plot_heatmap(dataset, True)
+    print(f"Anomaly label is for class: {config.anomaly_label}")
 
     """Link is explaining the bellow step"""
     # https://towardsdatascience.com/what-and-why-behind-fit-transform-vs-transform-in-scikit-learn-78f915cf96fe
-    X = StandardScaler().fit_transform(X)
+    data = StandardScaler().fit_transform(data)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
-
-    """Inserting previously take data instances to test dataset"""
-    X_test = np.append(X_test, a, axis=0)
-    y_test = np.append(y_test, b, axis=0)
+    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.85, random_state=42)
 
     """If supervised anomaly detection is intended, then we can remove anomalies from training"""
     # X_train = X_train[y_train != config.anomaly_label, :]
 
     """Turning multiple class data labels to binary"""
-    y_test = [0 if yi == config.anomaly_label else 1 for yi in y_test]
+    y_test = [0 if str(yi) == config.anomaly_label else 1 for yi in y_test]
 
     anomaly_detection = AnomalyDetection(X_test, y_test, [1], [0])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, debug=True, generations=500, visualize=True, ensemble=True,
+    neat_outlier = NeatOutlier(config, debug=True, generations=100, visualize=True, ensemble=True,
                                sensitivity=0.8)
 
     """Perform neuroevolution on training dataset"""
