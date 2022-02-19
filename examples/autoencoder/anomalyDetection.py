@@ -63,7 +63,7 @@ class Metric(object):
 class AnomalyDetection(object):
 
     def __init__(self, x_test, y_test, valid_label, anomaly_label):
-        self.x_test = x_test
+        self.x_test = x_test.to_numpy()
         self.y_test = y_test
         self.valid_label = valid_label
         self.anomaly_label = anomaly_label

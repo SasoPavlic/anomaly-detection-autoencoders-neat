@@ -4,14 +4,28 @@ from sklearn.base import OutlierMixin
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors._base import UnsupervisedMixin
 from sklearn.utils import check_array
-
 import neat
 import visualize
 from sklearn import datasets
+from sklearn_pandas import DataFrameMapper
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 import pandas as pd
+
+
+class UnsupervisedMixin:
+    def fit(self, X, y=None):
+        """Fit the model using X as training data
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix, BallTree, KDTree}
+            Training data. If array or matrix, shape [n_samples, n_features],
+            or [n_samples, n_samples] if metric='precomputed'.
+        """
+        return self._fit(X)
+
 
 """
 Constants:
@@ -144,9 +158,9 @@ if __name__ == '__main__':
 
     """Select the dataset"""
     with open("../../datasets/fault_detection.csv") as f:
-        dataset = pd.read_csv(f, delimiter=";").to_numpy()
-        data = dataset[:, 0:59]
-        target = dataset[:, -1]
+        dataset = pd.read_csv(f, delimiter=";")
+        data = dataset.iloc[:, :60]
+        target = dataset["Fault_lag"]
 
     """
         Since we are interested to perform unsupervised* anomaly detection, we will help
@@ -162,9 +176,11 @@ if __name__ == '__main__':
 
     """Link is explaining the bellow step"""
     # https://towardsdatascience.com/what-and-why-behind-fit-transform-vs-transform-in-scikit-learn-78f915cf96fe
-    data = StandardScaler().fit_transform(data)
+    mapper = DataFrameMapper([(data.columns, StandardScaler())])
+    scaled_features = mapper.fit_transform(data.copy())
+    data = pd.DataFrame(scaled_features, index=data.index, columns=data.columns)
 
-    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.85, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.33, random_state=42)
 
     """If supervised anomaly detection is intended, then we can remove anomalies from training"""
     # X_train = X_train[y_train != config.anomaly_label, :]
@@ -175,11 +191,11 @@ if __name__ == '__main__':
     anomaly_detection = AnomalyDetection(X_test, y_test, [1], [0])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, debug=True, generations=100, visualize=True, ensemble=True,
+    neat_outlier = NeatOutlier(config, debug=True, generations=1000, visualize=True, ensemble=True,
                                sensitivity=0.8)
 
     """Perform neuroevolution on training dataset"""
-    neat_outlier.fit(X_train)
+    neat_outlier.fit(X_train.to_numpy())
 
     predictions = neat_outlier.predict(X_test)
     acc = accuracy_score(predictions, y_test)
