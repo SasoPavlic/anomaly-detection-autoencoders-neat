@@ -26,6 +26,10 @@ class Population(object):
         self.reproduction = config.reproduction_type(config.reproduction_config,
                                                      self.reporters,
                                                      stagnation)
+
+        self.best_auc_score = 0
+        self.best_generation = 0
+
         if config.fitness_criterion == 'max':
             self.fitness_criterion = max
         elif config.fitness_criterion == 'min':
@@ -55,7 +59,7 @@ class Population(object):
     def remove_reporter(self, reporter):
         self.reporters.remove(reporter)
 
-    def run(self, fitness_function, X, n=None):
+    def run(self, fitness_function, X, n=None, anomaly_detection=None, neat=None, config=None):
         """
         Runs NEAT's genetic algorithm for at most n generations.  If n
         is None, run until solution is found or extinction occurs.
@@ -100,6 +104,11 @@ class Population(object):
             # Track the best genome ever seen.
             if self.best_genome is None or best.fitness > self.best_genome.fitness:
                 self.best_genome = best
+                encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.best_genome, config)
+                anomaly_detection.find(encoder, decoder)
+                self.best_auc_score = anomaly_detection.AUC
+                self.best_generation = k
+
 
             if not self.config.no_fitness_termination:
                 # End if the fitness threshold is reached.
@@ -135,4 +144,5 @@ class Population(object):
         if self.config.no_fitness_termination:
             self.reporters.found_solution(self.config, self.generation, self.best_genome)
 
+        print(f"Best generation: {self.best_generation} with AUC score: {self.best_auc_score}")
         return self.best_genome

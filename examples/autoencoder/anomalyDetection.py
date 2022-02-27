@@ -38,6 +38,7 @@ class Metric(object):
         Returns:
             Recall, Precision, F1-score
         """
+        self.accuracy = ((TP + TN) / (TP + TN + FP + FN))
         self.recall = (TP / (TP + FN))
         self.precision = ((TP / (TP + FP)))
         self.F1 = 2 * ((self.precision * self.recall) / (self.precision + self.recall))
@@ -73,35 +74,13 @@ class AnomalyDetection(object):
         self.TPR_array = []
         self.AUC = None
 
-    def calculate_roc_curve(self):
-        # https://www.analyticsvidhya.com/blog/2020/06/auc-roc-curve-machine-learning/
-        random_probs = [0 for i in range(len(self.y_test))]
-        p_fpr, p_tpr, thresholds = roc_curve(self.y_test, random_probs, pos_label=1)
-
-        # This is the ROC curve
-        plt.style.use('seaborn')
-
-        # plot roc curves
-        plt.plot(self.FPR_array, self.TPR_array, linestyle='--', color='green', label='Autoencoder')
-        plt.plot(p_fpr, p_tpr, linestyle='--', color='blue')
-
-        plt.title(f'ROC curve - AUC: {round(np.trapz(self.TPR_array, self.FPR_array), 3)}')
-        # x label
-        plt.xlabel('False Positive Rate')
-        # y label
-        plt.ylabel('True Positive rate')
-        plt.legend(loc='best')
-
-        self.AUC = round(np.trapz(self.TPR_array, self.FPR_array), 3)
-
-        print(f"=====================================")
-        print(f"Model AUC score: {self.AUC}")
-        plt.savefig('./logs/roc-auc.png')
-        plt.show()
-
-    def find(self, encoder, decoder):
+    def find(self, encoder, decoder, final_evaluation=False):
         """Compute ROC-AUC values and visualize it in plot
         """
+        self.AUC = None
+        self.metrics = []
+        self.FPR_array = []
+        self.TPR_array = []
 
         decoded_instances = []
         for i, x in enumerate(self.x_test):
@@ -132,4 +111,6 @@ class AnomalyDetection(object):
             self.FPR_array.append(metric.FPR)
             self.TPR_array.append(metric.TPR)
 
-        self.calculate_roc_curve()
+        self.AUC = abs(round(np.trapz(self.TPR_array, self.FPR_array), 3))
+
+

@@ -9,6 +9,7 @@ import graphviz
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_curve
 
 
 def plot_stats(statistics, ylog=False, view=False, filename='./logs/avg_fitness.svg'):
@@ -293,19 +294,21 @@ def plot_slider(inputs, encoder, decoder, view=False, filename='./logs/slider.pn
 
 
 def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):
+    list_accuracy = list()
     list_F1 = list()
     list_recall = list()
     list_precision = list()
     quantiles = list()
-    best_f1 = list()
-    best = 0
+
     for metric in metrics:
+        list_accuracy.append(metric.accuracy)
         list_F1.append(metric.F1)
         list_recall.append(metric.recall)
         list_precision.append(metric.precision)
         quantiles.append(metric.quantile)
 
     # plotting the points
+    plt.plot(quantiles, list_accuracy, label="Accuracy")
     plt.plot(quantiles, list_F1, label="F1-measure")
     plt.plot(quantiles, list_recall, label="Recall")
     plt.plot(quantiles, list_precision, label="Precision ")
@@ -322,6 +325,32 @@ def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):
 
     # function to show the plot
     plt.savefig(filename)
+    if view:
+        plt.show()
+
+    plt.close()
+
+
+def plot_roc_curve(y_test, FPR_array, TPR_array, view=False, filename='./logs/roc_curve.png'):
+    # https://www.analyticsvidhya.com/blog/2020/06/auc-roc-curve-machine-learning/
+    random_probs = [0 for i in range(len(y_test))]
+    p_fpr, p_tpr, thresholds = roc_curve(y_test, random_probs, pos_label=1)
+
+    # This is the ROC curve
+    plt.style.use('seaborn')
+
+    # plot roc curves
+    plt.plot(FPR_array, TPR_array, linestyle='--', color='green', label='Autoencoder')
+    plt.plot(p_fpr, p_tpr, linestyle='--', color='blue')
+
+    plt.title(f'ROC curve - AUC: {round(np.trapz(TPR_array, FPR_array), 3)}')
+    # x label
+    plt.xlabel('False Positive Rate')
+    # y label
+    plt.ylabel('True Positive rate')
+    plt.legend(loc='best')
+    plt.savefig(filename)
+
     if view:
         plt.show()
 
