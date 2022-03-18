@@ -11,7 +11,7 @@ The proposed method ANAD is designing a topology of autoencoders for anomaly det
 * **Construct novel autoencoder's architecture** using neuroevolution based on NEAT algorithm.
 * Allow an **unsupervised machine learning algorithm** to make decisions that mark the threshold between normal and
   anomalous data instances.
-* **Finds anomalies** in Wine dataset based on configuration parameters
+* **Finds anomalies** in predictive maintenance dataset based on configuration parameters
 
 ### Requirements ✅
 
