@@ -123,7 +123,7 @@ def draw_net_encoder(config, genome, view=False, filename='logs/encoder', node_n
         connections = set()
         for cg in genome.connections.values():
             if cg.enabled or show_disabled:
-                connections.add((cg.in_node_id, cg.out_node_id))
+                connections.add((cg.key[0], cg.key[1]))
 
         used_nodes = copy.copy(outputs)
         pending = copy.copy(outputs)
@@ -216,7 +216,7 @@ def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_n
         connections = set()
         for cg in genome.connections.values():
             if cg.enabled or show_disabled:
-                connections.add((cg.in_node_id, cg.out_node_id))
+                connections.add((cg.key[0], cg.key[1]))
 
         used_nodes = copy.copy(outputs)
         pending = copy.copy(outputs)
@@ -252,45 +252,6 @@ def draw_net_decoder(config, genome, view=False, filename='logs/decoder', node_n
     dot.render(filename, view=view)
 
     return dot
-
-
-def plot_slider(inputs, encoder, decoder, view=False, filename='./logs/slider.png'):
-    """ Plots the slider for encoder and decoder. """
-    input = inputs[0]
-    bottleneck_output = encoder.activate(input)
-    reconstructed = decoder.activate(bottleneck_output)
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(np.array([reconstructed]))
-
-    axcolor = 'lightgoldenrodyellow'
-    decoder_input_axes = []
-    decoder_input_sliders = []
-    for i, out in enumerate(bottleneck_output):
-        y_pos = (i + 1) * 0.1
-        decoder_input_axes.append(plt.axes([0.25, y_pos, 0.65, 0.03], facecolor=axcolor))
-        decoder_input_sliders.append(Slider(decoder_input_axes[i], f'bottleneck_input{str(i)}', 0.0, 1.0, valinit=out))
-
-    def create_update_func(i):
-        def update(val):
-            bottleneck_output[i] = val
-            print(bottleneck_output)
-            im.set_data(np.array([decoder.activate(bottleneck_output)]))
-
-        return update
-
-    for i, slider in enumerate(decoder_input_sliders):
-        slider.on_changed(create_update_func(i))
-
-    if filename is not None:
-        plt.savefig(filename)
-
-    if view:
-        plt.show()
-        plt.close()
-        fig = None
-
-    return fig
 
 
 def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):

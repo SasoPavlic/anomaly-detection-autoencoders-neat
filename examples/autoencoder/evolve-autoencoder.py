@@ -1,19 +1,13 @@
 import pickle
-
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.base import OutlierMixin
-from sklearn.metrics import accuracy_score
-from sklearn.neighbors._base import UnsupervisedMixin
-from sklearn.utils import check_array
 import neat
 import visualize
-from sklearn import datasets
 from sklearn_pandas import DataFrameMapper
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 import pandas as pd
+from datetime import datetime
 
 
 class UnsupervisedMixin:
@@ -68,7 +62,7 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
         # Save the winner.
         self.stats.save()
 
-        with open('./logs/winner-AE', 'wb') as f:
+        with open('logs/500_generations/winner-AE', 'wb') as f:
             pickle.dump(self.winner, f)
 
         self.encoder, self.decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.winner, self.config)
@@ -77,7 +71,8 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
 
 
 if __name__ == '__main__':
-    print("Program start...")
+    start = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
+    print(f"Program start... {start}")
 
     """Prepare dataset for anomaly detection based on configuration file"""
     config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
@@ -94,8 +89,8 @@ if __name__ == '__main__':
         the algorithm by reducing the amount of anomalous data instances. By doing this
         algorithm learn better to encode/decode majority of data (normal instances).
         As a result minority of data (anomalies) will be reconstructed worst and therefore,
-        they will be more likely to be mark as a true positives anomalies. 
-        
+        they will be more likely to be mark as a true positives anomalies.
+
         *Disclaimer: One could argue that this is in fact a semi-supervised anomaly detection technique...
     """
 
@@ -142,4 +137,5 @@ if __name__ == '__main__':
     visualize.plot_stats(NO.stats, ylog=False, view=False)
     visualize.plot_species(NO.stats, view=False)
 
-    print("Program end...")
+    end = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
+    print(f"Program end... {end}")

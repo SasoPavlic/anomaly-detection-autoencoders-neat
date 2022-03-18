@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_curve, accuracy_score
 import matplotlib.pyplot as plt
 from configparser import ConfigParser
 from neat.config import Config
@@ -36,7 +36,7 @@ class Metric(object):
     def evaluate_anomalies(self, TP, FN, FP, TN):
         """Compute recall, precision and F1-score
         Returns:
-            Recall, Precision, F1-score
+            Accuracy, Recall, Precision, F1-score
         """
         self.accuracy = ((TP + TN) / (TP + TN + FP + FN))
         self.recall = (TP / (TP + FN))
@@ -68,6 +68,7 @@ class AnomalyDetection(object):
         self.y_test = y_test
         self.valid_label = valid_label
         self.anomaly_label = anomaly_label
+        self.acc_list = []
 
         self.metrics = []
         self.FPR_array = []
@@ -110,6 +111,13 @@ class AnomalyDetection(object):
 
             self.FPR_array.append(metric.FPR)
             self.TPR_array.append(metric.TPR)
+
+            """Calculating reconstruction accuracy per quantiles"""
+            predicted_values = [1 if i in outliers_idx else 0 for i, value in enumerate(self.y_test)]
+
+            self.acc_list.append(accuracy_score(predicted_values, self.y_test))
+
+
 
         self.AUC = abs(round(np.trapz(self.TPR_array, self.FPR_array), 3))
 
