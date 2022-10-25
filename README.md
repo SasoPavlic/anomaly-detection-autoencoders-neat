@@ -20,10 +20,8 @@ The proposed method ANAD is designing a topology of autoencoders for anomaly det
 
 ### Documentation 📘
 
-This code's paper is currently in the writing stage. If you can't wait, I recommend checking out a similar research, in
-which neural architecture search (NAS) was utilized instead of neuroevolution.
-
-* [Our related work](https://github.com/SasoPavlic/AutoDaedalus)
+**10thJubilee International Conference on Computational Cybernetics and Cyber-Medical Systems:**
+[Predictive maintenance of pumping system bearings with evolved autoencoders](https://www.sasopavlic.com/publication/predictive-maintenance-of-pumping-system-bearings-with-evolved-autoencoders/)
 
 ### Usage 🔨
 
@@ -52,3 +50,45 @@ Configure `evolve-autoencoder.cfg` according to your needs.
 * This code is a fork of [palmettos](https://github.com/palmettos/autoencoders-neat)
   and [CodeReclaimers](https://github.com/CodeReclaimers/neat-python). I am grateful that the authors chose to
   open-source their work for future use.
+  
+  # Cite us
+Are you using ANAD in your project or research? Please cite us!
+### Plain format
+```
+S. Pavlič, N. Young, and S. Karakatič, “Predictive maintenance of pumping system bearings with evolved autoencoders,” in 2022 IEEE 10th Jubilee International Conference on Computational Cybernetics and Cyber-Medical Systems (ICCC), Jul. 2022, pp. 000149–000154. doi: 10.1109/ICCC202255925.2022.9922678.
+```
+### Bibtex format
+```
+@inproceedings{pavlic_predictive_2022,
+	title = {Predictive maintenance of pumping system bearings with evolved autoencoders},
+	doi = {10.1109/ICCC202255925.2022.9922678},
+	eventtitle = {2022 {IEEE} 10th Jubilee International Conference on Computational Cybernetics and Cyber-Medical Systems ({ICCC})},
+	pages = {000149--000154},
+	booktitle = {2022 {IEEE} 10th Jubilee International Conference on Computational Cybernetics and Cyber-Medical Systems ({ICCC})},
+	author = {Pavlič, Sašo and Young, Nicholas and Karakatič, Sašo},
+	date = {2022-07},
+	keywords = {anomaly detection, neuroevolution, autoen-coder, Predictive maintenance},
+	file = {IEEE Xplore Abstract Record:C\:\\Users\\sasop\\Zotero\\storage\\A7LRPXY8\\9922678.html:text/html;IEEE Xplore Full Text PDF:C\:\\Users\\sasop\\Zotero\\storage\\Q2W2H8MQ\\Pavlič et al. - 2022 - Predictive maintenance of pumping system bearings .pdf:application/pdf},
+}
+```
+### RIS format
+```
+TY  - CONF
+TI  - Predictive maintenance of pumping system bearings with evolved autoencoders
+AU  - Pavlič, Sašo
+AU  - Young, Nicholas
+AU  - Karakatič, Sašo
+T2  - 2022 IEEE 10th Jubilee International Conference on Computational Cybernetics and Cyber-Medical Systems (ICCC)
+DA  - 2022/07//
+PY  - 2022
+DO  - 10.1109/ICCC202255925.2022.9922678
+DP  - IEEE Xplore
+SP  - 000149
+EP  - 000154
+L1  - https://ieeexplore.ieee.org/stampPDF/getPDF.jsp?tp=&arnumber=9922678&ref=aHR0cHM6Ly9pZWVleHBsb3JlLmllZWUub3JnL2RvY3VtZW50Lzk5MjI2Nzg=
+L2  - https://ieeexplore.ieee.org/document/9922678
+KW  - anomaly detection
+KW  - neuroevolution
+KW  - autoen-coder
+KW  - Predictive maintenance
+```
