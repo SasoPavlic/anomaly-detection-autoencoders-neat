@@ -113,7 +113,7 @@ class AnomalyDetection(object):
             self.TPR_array.append(metric.TPR)
 
             """Calculating reconstruction accuracy per quantiles"""
-            predicted_values = [1 if i in outliers_idx else 0 for i, value in enumerate(self.y_test)]
+            predicted_values = [self.anomaly_label if i in outliers_idx else self.valid_label for i, value in enumerate(self.y_test)]
 
             self.acc_list.append(accuracy_score(predicted_values, self.y_test))
 
