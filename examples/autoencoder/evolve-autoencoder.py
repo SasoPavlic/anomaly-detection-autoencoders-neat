@@ -2,7 +2,7 @@ import pickle
 from sklearn.base import OutlierMixin
 import neat
 import visualize
-from sklearn_pandas import DataFrameMapper
+#from sklearn_pandas import DataFrameMapper
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
@@ -98,9 +98,9 @@ if __name__ == '__main__':
 
     """Link is explaining the bellow step"""
     # https://towardsdatascience.com/what-and-why-behind-fit-transform-vs-transform-in-scikit-learn-78f915cf96fe
-    mapper = DataFrameMapper([(data.columns, StandardScaler())])
-    scaled_features = mapper.fit_transform(data.copy())
-    data = pd.DataFrame(scaled_features, index=data.index, columns=data.columns)
+    # mapper = DataFrameMapper([(data.columns, StandardScaler())])
+    # scaled_features = mapper.fit_transform(data.copy())
+    data = pd.DataFrame(data, index=data.index, columns=data.columns)
 
     X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.33, random_state=42)
 
@@ -108,9 +108,9 @@ if __name__ == '__main__':
     # X_train = X_train[y_train != config.anomaly_label, :]
 
     """Turning multiple class data labels to binary"""
-    y_test = [0 if str(yi) == config.anomaly_label else 1 for yi in y_test]
+    y_test = [1 if str(yi) == config.anomaly_label else 0 for yi in y_test]
 
-    anomaly_detection = AnomalyDetection(X_test, y_test, [1], [0])
+    anomaly_detection = AnomalyDetection(X_test, y_test, [0], [1])
 
     """Adjust number of generations"""
     neat_outlier = NeatOutlier(config, generations=500)
