@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 import pandas as pd
 from datetime import datetime
+from pathlib import Path
 
 
 class UnsupervisedMixin:
@@ -30,6 +31,7 @@ Constants:
 
 MAX_ACCURACY = 86460
 anomaly_detection = None
+saving_path = "logs/500_generations/winner-AE"
 
 
 def eval_genomes(genomes, config, X):
@@ -61,8 +63,8 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
         self.winner = population.run(eval_genomes, X, self.generations, anomaly_detection, neat, self.config)
         # Save the winner.
         self.stats.save()
-
-        with open('logs/500_generations/winner-AE', 'wb') as f:
+        Path(saving_path).mkdir(parents=True, exist_ok=True)
+        with open(saving_path, 'wb') as f:
             pickle.dump(self.winner, f)
 
         self.encoder, self.decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.winner, self.config)
@@ -113,7 +115,7 @@ if __name__ == '__main__':
     anomaly_detection = AnomalyDetection(X_test, y_test, [0], [1])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, generations=500)
+    neat_outlier = NeatOutlier(config, generations=3)
 
     """Perform neuroevolution on training dataset"""
     NO = neat_outlier.fit(X_train.to_numpy())
