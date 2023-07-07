@@ -4,6 +4,7 @@ the most-fit genomes and information on genome/species fitness and species sizes
 """
 import copy
 import csv
+from pathlib import Path
 
 from neat.math_util import mean, stdev, median2
 from neat.reporting import BaseReporter
@@ -76,15 +77,16 @@ class StatisticsReporter(BaseReporter):
         """Returns the most fit genome ever seen."""
         return self.best_genomes(1)[0]
 
-    def save(self):
-        self.save_genome_fitness()
-        self.save_species_count()
-        self.save_species_fitness()
+    def save(self, saving_path):
+        self.save_genome_fitness(filename=saving_path + '/fitness_history.csv')
+        self.save_species_count(filename=saving_path + '/speciation.csv')
+        self.save_species_fitness(filename=saving_path + '/species_fitness.csv')
 
     def save_genome_fitness(self,
                             delimiter=' ',
                             filename='./logs/fitness_history.csv'):
         """ Saves the population's best and average fitness. """
+        Path(filename).parent.mkdir(parents=True, exist_ok=True)
         with open(filename, 'w') as f:
             w = csv.writer(f, delimiter=delimiter)
 

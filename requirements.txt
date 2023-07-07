@@ -1,0 +1,8 @@
+setuptools
+matplotlib
+numpy
+graphviz
+Pillow
+seaborn
+pandas
+scikit-learn

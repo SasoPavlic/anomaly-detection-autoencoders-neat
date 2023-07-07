@@ -1,3 +1,4 @@
+import os
 import pickle
 from sklearn.base import OutlierMixin
 import neat
@@ -30,8 +31,9 @@ Constants:
 """
 
 MAX_ACCURACY = 86460
+GENERATIONS = 25
 anomaly_detection = None
-saving_path = "logs/500_generations/winner-AE"
+saving_path = f"./logs/{GENERATIONS}_generations"
 
 
 def eval_genomes(genomes, config, X):
@@ -62,9 +64,12 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
 
         self.winner = population.run(eval_genomes, X, self.generations, anomaly_detection, neat, self.config)
         # Save the winner.
-        self.stats.save()
-        Path(saving_path).mkdir(parents=True, exist_ok=True)
-        with open(saving_path, 'wb') as f:
+        os.makedirs(saving_path, exist_ok=True)
+        os.makedirs(saving_path + '/winner-AE', exist_ok=True)
+
+        self.stats.save(saving_path)
+
+        with open(saving_path + '/winner-AE' + '/best_model.pkl', 'wb+') as f:
             pickle.dump(self.winner, f)
 
         self.encoder, self.decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.winner, self.config)
@@ -115,7 +120,7 @@ if __name__ == '__main__':
     anomaly_detection = AnomalyDetection(X_test, y_test, [0], [1])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, generations=3)
+    neat_outlier = NeatOutlier(config, generations=GENERATIONS)
 
     """Perform neuroevolution on training dataset"""
     NO = neat_outlier.fit(X_train.to_numpy())
@@ -125,19 +130,19 @@ if __name__ == '__main__':
     print(f"=====================================")
     print(f"Model AUC score: {anomaly_detection.AUC}")
 
-    visualize.plot_roc_curve(anomaly_detection.y_test, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True)
-    visualize.plot_metrics(anomaly_detection.metrics, True)
+    visualize.plot_roc_curve(anomaly_detection.y_test, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True, filename=saving_path + "/roc_curve.svg")
+    visualize.plot_metrics(anomaly_detection.metrics, True, filename=saving_path + "/metrics.svg")
 
     visualize.draw_net_encoder(config, NO.winner.encoder, False,
                                node_colors={key: 'yellow' for key in NO.winner.encoder.nodes},
-                               show_disabled=True)
+                               show_disabled=True, filename=saving_path + "/encoder")
 
     visualize.draw_net_decoder(config, NO.winner.decoder, False,
                                node_colors={key: 'yellow' for key in NO.winner.decoder.nodes},
-                               show_disabled=True)
+                               show_disabled=True, filename=saving_path + "/decoder")
 
-    visualize.plot_stats(NO.stats, ylog=False, view=False)
-    visualize.plot_species(NO.stats, view=False)
+    visualize.plot_stats(NO.stats, ylog=False, view=False, filename=saving_path + "/fitness.svg")
+    visualize.plot_species(NO.stats, view=False, filename=saving_path + "/speciation.svg")
 
     end = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
     print(f"Program end... {end}")
