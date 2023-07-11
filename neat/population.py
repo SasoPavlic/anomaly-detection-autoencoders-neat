@@ -105,15 +105,17 @@ class Population(object):
             if self.best_genome is None or best.fitness > self.best_genome.fitness:
                 self.best_genome = best
                 encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.best_genome, config)
-                anomaly_detection.find(encoder, decoder)
+                anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
                 self.best_auc_score = anomaly_detection.AUC
                 self.best_generation = k
-
 
             if not self.config.no_fitness_termination:
                 # End if the fitness threshold is reached.
                 fv = self.fitness_criterion(g.fitness for g in self.population.values())
-                if fv >= self.config.fitness_threshold:
+                if fv >= self.config.fitness_threshold and self.config.fitness_criterion == 'max':
+                    self.reporters.found_solution(self.config, self.generation, best)
+                    break
+                elif fv <= self.config.fitness_threshold and self.config.fitness_criterion == 'min':
                     self.reporters.found_solution(self.config, self.generation, best)
                     break
 

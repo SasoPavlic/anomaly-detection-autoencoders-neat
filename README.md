@@ -37,6 +37,20 @@ Configure `evolve-autoencoder.cfg` according to your needs.
 
 `python evolve-autoencoder.py`
 
+##### Running ANAD script with Docker:
+
+```docker build --tag spartan300/anad . ```
+
+```
+docker run \
+--rm \
+-it \
+-w="/app/examples/cardiovascular-risk/" \
+--shm-size 8G spartan300/anad \
+python ./evolve-autoencoder.py
+```
+
+
 ### HELP ⚠️
 
 **saso.pavlic@student.um.si**
