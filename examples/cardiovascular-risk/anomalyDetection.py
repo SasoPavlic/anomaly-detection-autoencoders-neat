@@ -14,7 +14,10 @@ class AnomalyDetectionConfig(Config):
         config = ConfigParser()
         self.path = filename
         config.read(self.path)
+        self.generations = int(config.get('NEAT', 'generations'))
         self.anomaly_label = str(config.get('AnomalyDetection', 'anomaly_label'))
+        self.curriculum_levels = str(config.get('AnomalyDetection', 'curriculum_levels'))
+        self.data_percentage = float(config.get('AnomalyDetection', 'data_percentage'))
 
 
 class AnomalyDetection(object):

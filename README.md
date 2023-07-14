@@ -45,9 +45,11 @@ Configure `evolve-autoencoder.cfg` according to your needs.
 docker run \
 --rm \
 -it \
+-v $(pwd)/logs:/app/examples/cardiovascular-risk/logs \
+-v $(pwd)/config:/app/examples/cardiovascular-risk/config \
 -w="/app/examples/cardiovascular-risk/" \
 --shm-size 8G spartan300/anad \
-python ./evolve-autoencoder.py
+python evolve-autoencoder.py
 ```
 
 

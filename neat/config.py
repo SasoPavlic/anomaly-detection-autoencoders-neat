@@ -127,7 +127,8 @@ class DefaultClassConfig(object):
 class Config(object):
     """A simple container for user-configurable parameters of NEAT."""
 
-    __params = [ConfigParameter('pop_size', int),
+    __params = [ConfigParameter('generations', int),
+                ConfigParameter('pop_size', int),
                 ConfigParameter('fitness_criterion', str),
                 ConfigParameter('fitness_threshold', float),
                 ConfigParameter('reset_on_extinction', bool),

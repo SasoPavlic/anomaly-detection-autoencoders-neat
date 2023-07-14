@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.base import OutlierMixin
 # from sklearn_pandas import DataFrameMapper
 from sklearn.model_selection import train_test_split
-
+import dataloader as data_loader
 import neat
 import visualize
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
@@ -31,9 +31,7 @@ class UnsupervisedMixin:
 Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
 """
-GENERATIONS = 100
 anomaly_detection = None
-saving_path = f"./logs/{GENERATIONS}_generations"
 
 
 def eval_genomes(genomes, config, X):
@@ -63,7 +61,7 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
         self.stats = None
         self.winner = None
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None, saving_path='./logs'):
         population = neat.Population(self.config)
         self.stats = neat.StatisticsReporter()
 
@@ -91,19 +89,12 @@ if __name__ == '__main__':
 
     """Prepare dataset for anomaly detection based on configuration file"""
     config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
-                                    neat.DefaultStagnation, 'evolve-autoencoder.cfg')
+                                    neat.DefaultStagnation, 'config/evolve-autoencoder.cfg')
 
-    """Select the dataset"""
-    with open("../../datasets/CVD_formated.csv") as f:
-        dataset = pd.read_csv(f, delimiter=",").sample(frac=1, random_state=0)#.head(333)
-        data = dataset.iloc[:, :19]
-        target = dataset["Heart_Disease"]
+    saving_path = f"./logs/{config.generations}_generations"
 
-
-    # with open("../../datasets/fault_detection.csv") as f:
-    #     dataset = pd.read_csv(f, delimiter=";").sample(frac=1, random_state=0).head(300)
-    #     data = dataset.iloc[:, :60]
-    #     target = dataset["Fault_lag"]
+    # Split the data into X levels of difficulty
+    data, target = data_loader.curriculum_cvd_dataset(levels=config.curriculum_levels, percentage=config.data_percentage)
 
     """
         Since we are interested to perform unsupervised* anomaly detection, we will help
@@ -142,10 +133,10 @@ if __name__ == '__main__':
     anomaly_detection = AnomalyDetection(X_test, y_test, [0], [1])
 
     """Adjust number of generations"""
-    neat_outlier = NeatOutlier(config, generations=GENERATIONS)
+    neat_outlier = NeatOutlier(config, generations=config.generations)
 
     """Perform neuroevolution on training dataset"""
-    NO = neat_outlier.fit(X_train.to_numpy())
+    NO = neat_outlier.fit(X_train.to_numpy(), saving_path=saving_path)
 
     """Plotting results from anomaly detection on graph"""
 
