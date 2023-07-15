@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y graphviz
 # Copy and install Python dependencies
 COPY requirements.txt /app/requirements.txt
 RUN pip3 install -r requirements.txt
-RUN pip install graphviz
+#RUN pip install graphviz
 
 # Create directories and copy files
 RUN mkdir datasets
@@ -29,5 +29,4 @@ COPY setup.py /app/setup.py
 RUN pip3 install .
 
 # Other commands
-CMD tree
 RUN python -c "import neat ; print(neat.population)" >> neat-location.info

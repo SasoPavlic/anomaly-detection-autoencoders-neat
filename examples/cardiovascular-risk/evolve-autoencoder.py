@@ -45,7 +45,7 @@ def eval_genomes(genomes, config, X):
         genome.fitness = int(np.mean(scores) * math.pow(10, 15))
 
         # Write genome.fitness to file line by line
-        with open('fitness.txt', 'a+') as f:
+        with open('./logs/fitness.txt', 'a+') as f:
             f.write(str(genome.fitness) + '\n')
             #print(f"Genome {genome_id} fitness: {genome.fitness}")
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
                                     neat.DefaultStagnation, 'config/evolve-autoencoder.cfg')
 
-    saving_path = f"./logs/{config.generations}_generations"
+    saving_path = f"./logs/{config.generations}_generations/{config.curriculum_levels}_levels"
 
     # Split the data into X levels of difficulty
     data, target = data_loader.curriculum_cvd_dataset(levels=config.curriculum_levels, percentage=config.data_percentage)
