@@ -1,4 +1,3 @@
-import math
 import os
 import pickle
 from datetime import datetime
@@ -8,6 +7,7 @@ import pandas as pd
 from sklearn.base import OutlierMixin
 # from sklearn_pandas import DataFrameMapper
 from sklearn.model_selection import train_test_split
+
 import dataloader as data_loader
 import neat
 import visualize
@@ -32,23 +32,22 @@ Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
 """
 anomaly_detection = None
+global saving_path
 
 
 def eval_genomes(genomes, config, X):
-    global current_best_accuracy
     for genome_id, genome in genomes:
         encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(genome, config)
 
         # anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
         decoded_instances, scores, targets = anomaly_detection.calculate_mse(encoder, decoder)
 
-        genome.fitness = int(np.mean(scores) * math.pow(10, 15))
+        genome.fitness = int(np.median(scores))
 
         # Write genome.fitness to file line by line
-        with open('./logs/fitness.txt', 'a+') as f:
-            f.write(str(genome.fitness) + '\n')
-            #print(f"Genome {genome_id} fitness: {genome.fitness}")
-
+        with open(f'{saving_path}/fitness.txt', 'a+') as f:
+            f.write(str(f"{genome_id},{genome.fitness}") + '\n')
+            # print(f"Genome {genome_id} fitness: {genome.fitness}")
 
 
 class NeatOutlier(OutlierMixin, UnsupervisedMixin):
@@ -70,7 +69,6 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
 
         self.winner = population.run(eval_genomes, X, self.generations, anomaly_detection, neat, self.config)
         # Save the winner.
-        os.makedirs(saving_path, exist_ok=True)
         os.makedirs(saving_path + '/winner-AE', exist_ok=True)
 
         self.stats.save(saving_path)
@@ -92,9 +90,11 @@ if __name__ == '__main__':
                                     neat.DefaultStagnation, 'config/evolve-autoencoder.cfg')
 
     saving_path = f"./logs/{config.generations}_generations/{config.curriculum_levels}_levels"
+    os.makedirs(saving_path, exist_ok=True)
 
     # Split the data into X levels of difficulty
-    data, target = data_loader.curriculum_cvd_dataset(levels=config.curriculum_levels, percentage=config.data_percentage)
+    data, target = data_loader.curriculum_cvd_dataset(levels=config.curriculum_levels,
+                                                      percentage=config.data_percentage)
 
     """
         Since we are interested to perform unsupervised* anomaly detection, we will help

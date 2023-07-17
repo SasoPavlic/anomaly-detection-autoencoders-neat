@@ -96,9 +96,16 @@ class Population(object):
             for g in self.population.values():
                 if g.fitness is None:
                     raise RuntimeError("Fitness not assigned to genome {}".format(g.key))
-
-                if best is None or g.fitness > best.fitness:
-                    best = g
+                # depends on self.config.fitness_criterion which comparison operator to use
+                # If it is 'max' then the best genome is the one with the highest fitness
+                # If it is 'min' then the best genome is the one with the lowest fitness
+                # Write code bellow
+                if self.config.fitness_criterion == 'max':
+                    if best is None or g.fitness > best.fitness:
+                        best = g
+                elif self.config.fitness_criterion == 'min':
+                    if best is None or g.fitness < best.fitness:
+                        best = g
             self.reporters.post_evaluate(self.config, self.population, self.species, best)
 
             # Track the best genome ever seen.

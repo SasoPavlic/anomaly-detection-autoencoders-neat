@@ -49,8 +49,8 @@ class AnomalyDetection(object):
             decoded_instances.append(decoded)
             targets.append(y)
             mse = mean_squared_error(x, decoded)
-            rmse = math.sqrt(mean_squared_error(x, decoded))
-            scores.append(rmse)
+            #rmse = math.sqrt(mean_squared_error(x, decoded))
+            scores.append(mse)
 
         # Return mse_list mean value
         return decoded_instances, scores, targets
