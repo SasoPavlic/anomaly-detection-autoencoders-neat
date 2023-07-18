@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def curriculum_cvd_dataset(levels="No levels", percentage=100):
+def curriculum_cvd_dataset(filename="../../datasets/CVD_curriculum.csv", levels="No levels", percentage=100):
     """Select the dataset
 
     Args:
@@ -13,7 +13,7 @@ def curriculum_cvd_dataset(levels="No levels", percentage=100):
         data, target: The data and target variables.
     """
 
-    with open("../../datasets/CVD_curriculum.csv") as f:
+    with open(filename) as f:
         dataset = pd.read_csv(f, delimiter=",")
 
         if levels == "two":
@@ -44,8 +44,8 @@ def curriculum_cvd_dataset(levels="No levels", percentage=100):
     return data, target
 
 
-def fault_detection_dataset():
-    with open("../../datasets/fault_detection.csv") as f:
+def fault_detection_dataset(filename="../../datasets/CVD_curriculum.csv"):
+    with open(filename) as f:
         dataset = pd.read_csv(f, delimiter=";").sample(frac=1, random_state=0).head(300)
         data = dataset.iloc[:, :60]
         target = dataset["Fault_lag"]

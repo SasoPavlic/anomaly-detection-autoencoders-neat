@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle
 import uuid
@@ -88,15 +89,35 @@ if __name__ == '__main__':
     start = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
     print(f"Program start... {start}")
 
+    parser = argparse.ArgumentParser(description='Generic runner for Convolutional AE models')
+    parser.add_argument('--config', '-c',
+                        dest="filename",
+                        metavar='FILE',
+                        help='path to the config file',
+                        default='config/evolve-autoencoder.cfg')
+    parser.add_argument('--dataset', '-d',
+                        dest="dataset",
+                        metavar='FILE',
+                        help='path to the dataset file',
+                        default='../../datasets/CVD_curriculum.csv')
+
+    parser.add_argument('--curriculum_levels', '-cl',
+                        dest="curriculum_levels",
+                        metavar='STRING',
+                        help='curriculum_levels',
+                        default='three')
+
+    args = parser.parse_args()
+
     """Prepare dataset for anomaly detection based on configuration file"""
     config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
-                                    neat.DefaultStagnation, 'config/evolve-autoencoder.cfg')
+                                    neat.DefaultStagnation, args.filename)
 
-    saving_path = f"./logs/{RUN_UUID}/{config.generations}_generations/{config.curriculum_levels}_levels"
+    saving_path = f"./logs/{RUN_UUID}/{config.generations}_generations/{args.curriculum_levels}_levels"
     os.makedirs(saving_path, exist_ok=True)
 
     # Split the data into X levels of difficulty
-    data, target = data_loader.curriculum_cvd_dataset(levels=config.curriculum_levels,
+    data, target = data_loader.curriculum_cvd_dataset(filename=args.dataset, levels=args.curriculum_levels,
                                                       percentage=config.data_percentage)
 
     """
