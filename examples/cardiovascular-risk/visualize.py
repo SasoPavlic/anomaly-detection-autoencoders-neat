@@ -1,17 +1,16 @@
 from __future__ import print_function
 
 import copy
+import math
 import warnings
 
-import numpy
-import seaborn as sns
-import matplotlib
-from matplotlib.widgets import Slider
 import graphviz
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_curve
+import seaborn as sns
+from sklearn.metrics import roc_curve, auc
 
 
 def plot_stats(statistics, ylog=False, view=False, filename='./logs/avg_fitness.svg'):
@@ -295,8 +294,39 @@ def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):
     plt.close()
 
 
-def plot_roc_curve(roc_auc, FPR_array, TPR_array, view=False, filename='./logs/roc_curve.png'):
+def optimal_roc_curve(encoder, decoder, anomalyDetection, view=False, filename='./logs/optimal_roc_curve.png'):
+    decoded_instances, scores, targets = anomalyDetection.calculate_mse(encoder, decoder)
+    fpr, tpr, thresholds = roc_curve(targets, scores)
+    roc_auc = auc(fpr, tpr)
 
+    optimal_idx = np.argmax(tpr - fpr)
+    optimal_threshold = thresholds[optimal_idx]
+    y_pred = [0 if x <= optimal_threshold else 1 for x in scores]
+
+    plt.figure()
+    lw = 2
+    plt.plot(fpr, tpr, color='darkorange', lw=lw, label='Autoencoder (AUC = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--', label='Random classifier (AUC = 0.50)')
+    plt.plot([fpr[optimal_idx], tpr[optimal_idx]], [fpr[optimal_idx], tpr[optimal_idx]], color='red', lw=lw,
+             linestyle=':',
+             label=f'Distance = {round(math.dist([0, 1], [fpr[optimal_idx], tpr[optimal_idx]]), 2)}')
+    plt.plot(fpr[optimal_idx], tpr[optimal_idx], '-ro',
+             label=f'Optimal threshold (FPR={round(fpr[optimal_idx], 2)}, TPR={round(tpr[optimal_idx], 2)})')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    # plt.title("Performance of the optimal AE model for AD on fault detection dataset.")
+    plt.legend(loc='lower right')
+    plt.savefig(filename)
+
+    if view:
+        plt.show()
+
+    plt.close()
+
+
+def plot_roc_curve(roc_auc, FPR_array, TPR_array, view=False, filename='./logs/roc_curve.png'):
     plt.figure()
     lw = 2
     plt.plot(

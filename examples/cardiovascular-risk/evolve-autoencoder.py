@@ -144,8 +144,11 @@ if __name__ == '__main__':
     print(f"=====================================")
     print(f"Model AUC score: {anomaly_detection.AUC}")
 
-    visualize.plot_roc_curve(anomaly_detection.roc_auc, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True,
-                             filename=saving_path + "/roc_curve.svg")
+    visualize.optimal_roc_curve(neat_outlier.encoder, neat_outlier.decoder, anomaly_detection, True,
+                                filename=saving_path + "/optimal_roc_curve.svg")
+
+    # visualize.plot_roc_curve(anomaly_detection.roc_auc, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True,
+    #                          filename=saving_path + "/roc_curve.svg")
     # visualize.plot_metrics(anomaly_detection.metrics, True, filename=saving_path + "/metrics.svg")
 
     visualize.draw_net_encoder(config, NO.winner.encoder, False,
