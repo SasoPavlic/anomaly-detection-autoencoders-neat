@@ -19,7 +19,7 @@ RUN mkdir neat
 COPY datasets/CVD_curriculum.csv /app/datasets/CVD_curriculum.csv
 COPY examples/cardiovascular-risk/anomalyDetection.py /app/examples/cardiovascular-risk/anomalyDetection.py
 COPY examples/cardiovascular-risk/dataloader.py /app/examples/cardiovascular-risk/data-loader.py
-COPY examples/cardiovascular-risk/config/evolve-autoencoder.cfg /app/examples/cardiovascular-risk/evolve-autoencoder.cfg
+#COPY examples/cardiovascular-risk/config/evolve-autoencoder.cfg /app/examples/cardiovascular-risk/evolve-autoencoder.cfg
 COPY examples/cardiovascular-risk/evolve-autoencoder.py /app/examples/cardiovascular-risk/evolve-autoencoder.py
 COPY examples/cardiovascular-risk/visualize.py /app/examples/cardiovascular-risk/visualize.py
 COPY examples/cardiovascular-risk/dataloader.py /app/examples/cardiovascular-risk/dataloader.py

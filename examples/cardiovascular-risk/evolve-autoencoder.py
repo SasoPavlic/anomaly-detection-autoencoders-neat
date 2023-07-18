@@ -1,5 +1,6 @@
 import os
 import pickle
+import uuid
 from datetime import datetime
 
 import numpy as np
@@ -31,8 +32,10 @@ class UnsupervisedMixin:
 Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
 """
+RUN_UUID = uuid.uuid4().hex
 anomaly_detection = None
 global saving_path
+
 
 
 def eval_genomes(genomes, config, X):
@@ -89,7 +92,7 @@ if __name__ == '__main__':
     config = AnomalyDetectionConfig(neat.AutoencoderGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
                                     neat.DefaultStagnation, 'config/evolve-autoencoder.cfg')
 
-    saving_path = f"./logs/{config.generations}_generations/{config.curriculum_levels}_levels"
+    saving_path = f"./logs/{RUN_UUID}/{config.generations}_generations/{config.curriculum_levels}_levels"
     os.makedirs(saving_path, exist_ok=True)
 
     # Split the data into X levels of difficulty

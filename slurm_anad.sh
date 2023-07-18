@@ -1,8 +1,8 @@
 #!/bin/bash
 ## Running code on SLURM cluster
-#SBATCH -J anad-three
-#SBATCH -o anad-three-100gen-%j.out
-#SBATCH -e anad-three-100gen-%j.err
+#SBATCH -J prod-three
+#SBATCH -o prod-three-100gen-%j.out
+#SBATCH -e prod-three-100gen-%j.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=gpu
