@@ -18,6 +18,7 @@ class AnomalyDetectionConfig(Config):
         self.anomaly_label = str(config.get('AnomalyDetection', 'anomaly_label'))
         self.curriculum_levels = str(config.get('AnomalyDetection', 'curriculum_levels'))
         self.data_percentage = float(config.get('AnomalyDetection', 'data_percentage'))
+        self.test_size = float(config.get('AnomalyDetection', 'test_size'))
 
 
 class AnomalyDetection(object):

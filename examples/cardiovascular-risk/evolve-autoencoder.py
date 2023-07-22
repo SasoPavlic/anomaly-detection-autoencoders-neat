@@ -138,7 +138,7 @@ if __name__ == '__main__':
     # scaled_features = mapper.fit_transform(data.copy())
     data = pd.DataFrame(data, index=data.index, columns=data.columns)
 
-    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.33, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=config.test_size, random_state=42)
 
     """If supervised anomaly detection is intended, then we can remove anomalies from training"""
     # X_train = X_train[y_train != config.anomaly_label, :]

@@ -38,7 +38,7 @@ def curriculum_cvd_dataset(filename="../../datasets/CVD_curriculum.csv", levels=
             dataset = dataset.sample(frac=1, random_state=0)
             dataset = dataset.head(int(len(dataset) * percentage))
 
-        data = dataset.iloc[:, 1:20]
+        data = dataset.iloc[:, 1:20].drop(["Heart_Disease"], axis=1)
         target = dataset["Heart_Disease"]
 
     return data, target
