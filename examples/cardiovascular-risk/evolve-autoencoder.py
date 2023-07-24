@@ -16,19 +16,6 @@ import visualize
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 
 
-class UnsupervisedMixin:
-    def fit(self, X, y=None):
-        """Fit the model using X as training data
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix, BallTree, KDTree}
-            Training data. If array or matrix, shape [n_samples, n_features],
-            or [n_samples, n_samples] if metric='precomputed'.
-        """
-        return self._fit(X)
-
-
 """
 Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
@@ -39,12 +26,12 @@ global saving_path
 
 
 
-def eval_genomes(genomes, config, X):
+def eval_genomes(genomes, config, generation):
     for genome_id, genome in genomes:
         encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(genome, config)
 
         # anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
-        decoded_instances, scores, targets = anomaly_detection.calculate_mse(encoder, decoder)
+        decoded_instances, scores, targets = anomaly_detection.calculate_mse(encoder, decoder, generation)
 
         genome.fitness = int(np.median(scores))
 
@@ -54,7 +41,7 @@ def eval_genomes(genomes, config, X):
             # print(f"Genome {genome_id} fitness: {genome.fitness}")
 
 
-class NeatOutlier(OutlierMixin, UnsupervisedMixin):
+class NeatOutlier:
     def __init__(self, config, generations=100):
         super().__init__()
         self.generations = generations
@@ -64,14 +51,14 @@ class NeatOutlier(OutlierMixin, UnsupervisedMixin):
         self.stats = None
         self.winner = None
 
-    def fit(self, X, y=None, saving_path='./logs'):
+    def fit(self, saving_path='./logs'):
         population = neat.Population(self.config)
         self.stats = neat.StatisticsReporter()
 
         population.add_reporter(self.stats)
         population.add_reporter(neat.StdOutReporter(True))
 
-        self.winner = population.run(eval_genomes, X, self.generations, anomaly_detection, neat, self.config)
+        self.winner = population.run(eval_genomes, self.generations, anomaly_detection, neat, self.config)
         # Save the winner.
         os.makedirs(saving_path + '/winner-AE', exist_ok=True)
 
@@ -129,7 +116,6 @@ if __name__ == '__main__':
 
         *Disclaimer: One could argue that this is in fact a semi-supervised anomaly detection technique...
     """
-
     print(f"Anomaly label is for class: {config.anomaly_label}")
 
     """Link is explaining the bellow step"""
@@ -154,13 +140,13 @@ if __name__ == '__main__':
     y_test = y_temp
 
     # anomaly_detection = AnomalyDetection([0], [1])
-    anomaly_detection = AnomalyDetection(X_test, y_test, [0], [1])
+    anomaly_detection = AnomalyDetection(X_train, X_test, y_train, y_test, [0], [1], config.generations)
 
     """Adjust number of generations"""
     neat_outlier = NeatOutlier(config, generations=config.generations)
 
     """Perform neuroevolution on training dataset"""
-    NO = neat_outlier.fit(X_train.to_numpy(), saving_path=saving_path)
+    NO = neat_outlier.fit(saving_path=saving_path)
 
     """Plotting results from anomaly detection on graph"""
 

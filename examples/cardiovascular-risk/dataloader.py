@@ -18,7 +18,7 @@ def curriculum_cvd_dataset(filename="../../datasets/CVD_curriculum.csv", levels=
 
         if levels == "two":
             # Split the data into two levels of difficulty: easy and hard.
-            dataset["Level"] = dataset["Level"].replace({"Medium": "Easy"})
+            dataset["Level"] = dataset["Level"].replace({"Medium": "Hard"})
             unique_values = {}
             for value in dataset["Level"].unique():
                 head = dataset[dataset["Level"] == value].head(int(len(dataset) * percentage / 2))
@@ -38,7 +38,8 @@ def curriculum_cvd_dataset(filename="../../datasets/CVD_curriculum.csv", levels=
             dataset = dataset.sample(frac=1, random_state=0)
             dataset = dataset.head(int(len(dataset) * percentage))
 
-        data = dataset.iloc[:, 1:20].drop(["Heart_Disease"], axis=1)
+        # Heart_Disease is the target variable and Sum_Columns is not needed (encoded into Level)
+        data = dataset.iloc[:, 1:25].drop(["Heart_Disease"], axis=1).drop(["Sum_Columns"], axis=1)
         target = dataset["Heart_Disease"]
 
     return data, target

@@ -295,7 +295,7 @@ def plot_metrics(metrics, view=False, filename='./logs/metrics.svg'):
 
 
 def optimal_roc_curve(encoder, decoder, anomalyDetection, view=False, filename='./logs/optimal_roc_curve.png'):
-    decoded_instances, scores, targets = anomalyDetection.calculate_mse(encoder, decoder)
+    decoded_instances, scores, targets = anomalyDetection.calculate_final_mse(encoder, decoder)
     fpr, tpr, thresholds = roc_curve(targets, scores)
     roc_auc = auc(fpr, tpr)
 

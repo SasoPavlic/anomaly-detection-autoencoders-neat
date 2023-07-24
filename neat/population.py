@@ -1,6 +1,8 @@
 """Implements the core evolution algorithm."""
 from __future__ import print_function
 
+import numpy as np
+
 from neat.math_util import mean
 from neat.reporting import ReporterSet
 
@@ -27,7 +29,7 @@ class Population(object):
                                                      self.reporters,
                                                      stagnation)
 
-        self.best_auc_score = 0
+        self.best_fitness = 0
         self.best_generation = 0
 
         if config.fitness_criterion == 'max':
@@ -59,7 +61,7 @@ class Population(object):
     def remove_reporter(self, reporter):
         self.reporters.remove(reporter)
 
-    def run(self, fitness_function, X, n=None, anomaly_detection=None, neat=None, config=None):
+    def run(self, fitness_function, n=None, anomaly_detection=None, neat=None, config=None):
         """
         Runs NEAT's genetic algorithm for at most n generations.  If n
         is None, run until solution is found or extinction occurs.
@@ -89,7 +91,7 @@ class Population(object):
             self.reporters.start_generation(self.generation)
 
             # Evaluate all genomes using the user-provided function.
-            fitness_function(list(self.population.items()), self.config, X)
+            fitness_function(list(self.population.items()), self.config, self.generation)
 
             # Gather and report statistics.
             best = None
@@ -112,8 +114,8 @@ class Population(object):
             if self.best_genome is None or best.fitness > self.best_genome.fitness:
                 self.best_genome = best
                 encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.best_genome, config)
-                anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
-                self.best_auc_score = anomaly_detection.AUC
+                decoded_instances, scores, targets = anomaly_detection.calculate_mse(encoder, decoder, self.generation)
+                self.best_fitness = int(np.median(scores))
                 self.best_generation = k
 
             if not self.config.no_fitness_termination:
@@ -153,5 +155,5 @@ class Population(object):
         if self.config.no_fitness_termination:
             self.reporters.found_solution(self.config, self.generation, self.best_genome)
 
-        print(f"Best generation: {self.best_generation} with AUC score: {self.best_auc_score}")
+        print(f"Best generation: {self.best_generation} with fitness score: {self.best_fitness}")
         return self.best_genome
