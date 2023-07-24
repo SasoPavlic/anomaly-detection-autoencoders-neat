@@ -1,8 +1,8 @@
 #!/bin/bash
 ## Running code on SLURM cluster
-#SBATCH -J prod-zero
-#SBATCH -o prod-zero-%j.out
-#SBATCH -e prod-zero-%j.err
+#SBATCH -J three
+#SBATCH -o three-%j.out
+#SBATCH -e three-%j.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=gpu
@@ -14,4 +14,4 @@ singularity exec -e \
     --pwd /app/examples/cardiovascular-risk \
     -B $(pwd)/logs:/app/examples/cardiovascular-risk/logs,$(pwd)/config:/app/examples/cardiovascular-risk/config \
     --nv docker://spartan300/anad:latest \
-    python evolve-autoencoder.py -cl zero | tee $output_file
+    python evolve-autoencoder.py -cl three | tee $output_file

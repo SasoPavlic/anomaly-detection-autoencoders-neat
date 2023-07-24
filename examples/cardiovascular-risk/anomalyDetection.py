@@ -1,4 +1,3 @@
-import math
 from configparser import ConfigParser
 
 from sklearn.metrics import auc
@@ -23,7 +22,8 @@ class AnomalyDetectionConfig(Config):
 
 class AnomalyDetection(object):
 
-    def __init__(self, X_train, X_test, y_train, y_test, valid_label, anomaly_label, all_generations):
+    def __init__(self, X_train, X_test, y_train, y_test, valid_label, anomaly_label, all_generations,
+                 curriculum_levels):
         self.X_train = X_train
         self.y_train = y_train
         self.X_test = X_test
@@ -31,6 +31,7 @@ class AnomalyDetection(object):
         self.valid_label = valid_label
         self.anomaly_label = anomaly_label
         self.all_generations = all_generations
+        self.curriculum_levels = curriculum_levels
         self.acc_list = []
 
         self.metrics = []
@@ -40,6 +41,8 @@ class AnomalyDetection(object):
         self.AUC = None
 
     # Calculate difference between original and reconstructed data
+    # Refactor this code to be more efficient and shorter
+
     def calculate_mse(self, encoder, decoder, generation):
         """Calculate mean squared error between original and reconstructed data
         """
@@ -48,25 +51,42 @@ class AnomalyDetection(object):
         targets = []
         data = None
         for (index1, x), y in zip(self.X_train.iterrows(), self.y_train):
-            # TODO make case for two levels
+
             gen_percentage = generation / self.all_generations * 100
-            if gen_percentage <= 70:
-                if x[-1] == 'Easy':
-                    data = x[:-1]
-                else:
-                    continue
 
-            elif 70 < gen_percentage <= 95:
-                if x[-1] == 'Medium':
-                    data = x[:-1]
-                else:
-                    continue
+            if self.curriculum_levels == 'zero':
+                data = x[:-1]
 
-            elif gen_percentage > 95:
-                if x[-1] == 'Hard':
-                    data = x[:-1]
-                else:
-                    continue
+            elif self.curriculum_levels == 'two':
+                if gen_percentage <= 70:
+                    if x[-1] == 'Easy':
+                        data = x[:-1]
+                    else:
+                        continue
+                elif gen_percentage > 70:
+                    if x[-1] == 'Hard':
+                        data = x[:-1]
+                    else:
+                        continue
+
+            elif self.curriculum_levels == 'three':
+                if gen_percentage <= 70:
+                    if x[-1] == 'Easy':
+                        data = x[:-1]
+                    else:
+                        continue
+
+                elif 70 < gen_percentage <= 95:
+                    if x[-1] == 'Medium':
+                        data = x[:-1]
+                    else:
+                        continue
+
+                elif gen_percentage > 95:
+                    if x[-1] == 'Hard':
+                        data = x[:-1]
+                    else:
+                        continue
 
             bottle_neck = encoder.activate(data)
             decoded = decoder.activate(bottle_neck)

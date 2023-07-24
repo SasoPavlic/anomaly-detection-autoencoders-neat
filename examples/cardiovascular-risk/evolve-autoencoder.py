@@ -140,7 +140,7 @@ if __name__ == '__main__':
     y_test = y_temp
 
     # anomaly_detection = AnomalyDetection([0], [1])
-    anomaly_detection = AnomalyDetection(X_train, X_test, y_train, y_test, [0], [1], config.generations)
+    anomaly_detection = AnomalyDetection(X_train, X_test, y_train, y_test, [0], [1], config.generations, args.curriculum_levels)
 
     """Adjust number of generations"""
     neat_outlier = NeatOutlier(config, generations=config.generations)
