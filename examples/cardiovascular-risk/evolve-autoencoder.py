@@ -6,7 +6,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from sklearn.base import OutlierMixin
 # from sklearn_pandas import DataFrameMapper
 from sklearn.model_selection import train_test_split
 
@@ -15,7 +14,6 @@ import neat
 import visualize
 from anomalyDetection import AnomalyDetectionConfig, AnomalyDetection
 
-
 """
 Constants:
     - MAX_ACCUARCY depends on chosen dataset, try to manually tweak it.
@@ -23,7 +21,6 @@ Constants:
 RUN_UUID = uuid.uuid4().hex
 anomaly_detection = None
 global saving_path
-
 
 
 def eval_genomes(genomes, config, generation):
@@ -139,8 +136,8 @@ if __name__ == '__main__':
 
     y_test = y_temp
 
-    # anomaly_detection = AnomalyDetection([0], [1])
-    anomaly_detection = AnomalyDetection(X_train, X_test, y_train, y_test, [0], [1], config.generations, args.curriculum_levels)
+    anomaly_detection = AnomalyDetection(X_train, X_test, y_train, y_test, [0], [1], config.generations,
+                                         args.curriculum_levels)
 
     """Adjust number of generations"""
     neat_outlier = NeatOutlier(config, generations=config.generations)
