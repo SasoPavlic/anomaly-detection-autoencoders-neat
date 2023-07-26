@@ -83,7 +83,7 @@ class StatisticsReporter(BaseReporter):
         self.save_species_fitness(filename=saving_path + '/species_fitness.csv')
 
     def save_genome_fitness(self,
-                            delimiter=' ',
+                            delimiter=';',
                             filename='./logs/fitness_history.csv'):
         """ Saves the population's best and average fitness. """
         Path(filename).parent.mkdir(parents=True, exist_ok=True)
@@ -96,14 +96,14 @@ class StatisticsReporter(BaseReporter):
             for best, avg in zip(best_fitness, avg_fitness):
                 w.writerow([best, avg])
 
-    def save_species_count(self, delimiter=' ', filename='./logs/speciation.csv'):
+    def save_species_count(self, delimiter=';', filename='./logs/speciation.csv'):
         """ Log speciation throughout evolution. """
         with open(filename, 'w') as f:
             w = csv.writer(f, delimiter=delimiter)
             for s in self.get_species_sizes():
                 w.writerow(s)
 
-    def save_species_fitness(self, delimiter=' ', null_value='NA', filename='./logs/species_fitness.csv'):
+    def save_species_fitness(self, delimiter=';', null_value='NA', filename='./logs/species_fitness.csv'):
         """ Log species' average fitness throughout evolution. """
         with open(filename, 'w') as f:
             w = csv.writer(f, delimiter=delimiter)

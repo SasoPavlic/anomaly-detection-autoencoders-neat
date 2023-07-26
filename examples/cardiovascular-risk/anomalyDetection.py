@@ -62,31 +62,31 @@ class AnomalyDetection(object):
             # TODO make generation percentage parametric
 
             elif self.curriculum_levels == 'two':
-                if gen_percentage <= 60:
+                if gen_percentage <= 40:
                     if x[-1] == 'Easy':
                         data = x[:-1]
                     else:
                         continue
-                elif gen_percentage > 60:
+                elif gen_percentage > 40:
                     if x[-1] == 'Hard':
                         data = x[:-1]
                     else:
                         continue
 
             elif self.curriculum_levels == 'three':
-                if gen_percentage <= 50:
+                if gen_percentage <= 25:
                     if x[-1] == 'Easy':
                         data = x[:-1]
                     else:
                         continue
 
-                elif 50 < gen_percentage <= 80:
+                elif 25 < gen_percentage <= 50:
                     if x[-1] == 'Medium':
                         data = x[:-1]
                     else:
                         continue
 
-                elif gen_percentage > 80:
+                elif gen_percentage > 50:
                     if x[-1] == 'Hard':
                         data = x[:-1]
                     else:
