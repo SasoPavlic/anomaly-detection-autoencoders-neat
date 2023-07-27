@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 
+import numpy as np
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve, mean_squared_error
 
@@ -43,7 +44,25 @@ class AnomalyDetection(object):
         self.roc_auc = None
         self.AUC = None
 
-    def calculate_mse(self, encoder, decoder, generation):
+    def calculate_auc(self, targets, scores):
+        try:
+            FPR_array = dict()
+            TPR_array = dict()
+            thresholds = dict()
+            roc_auc = dict()
+            for i in range(2):
+                FPR_array[i], TPR_array[i], thresholds[i] = roc_curve(targets, scores)
+                roc_auc[i] = auc(FPR_array[i], TPR_array[i])
+
+            AUC = round(roc_auc[0], 5)
+
+        except Exception as e:
+            print(e)
+            AUC = 0.0
+
+        return int(AUC * 10000)
+
+    def calculate_fitness(self, encoder, decoder, generation):
         """Calculate mean squared error between original and reconstructed data
         """
         decoded_instances = []
@@ -62,31 +81,31 @@ class AnomalyDetection(object):
             # TODO make generation percentage parametric
 
             elif self.curriculum_levels == 'two':
-                if gen_percentage <= 40:
+                if gen_percentage <= 50:
                     if x[-1] == 'Easy':
                         data = x[:-1]
                     else:
                         continue
-                elif gen_percentage > 40:
+                elif gen_percentage > 50:
                     if x[-1] == 'Hard':
                         data = x[:-1]
                     else:
                         continue
 
             elif self.curriculum_levels == 'three':
-                if gen_percentage <= 25:
+                if gen_percentage <= 40:
                     if x[-1] == 'Easy':
                         data = x[:-1]
                     else:
                         continue
 
-                elif 25 < gen_percentage <= 50:
+                elif 40 < gen_percentage <= 65:
                     if x[-1] == 'Medium':
                         data = x[:-1]
                     else:
                         continue
 
-                elif gen_percentage > 50:
+                elif gen_percentage > 65:
                     if x[-1] == 'Hard':
                         data = x[:-1]
                     else:
@@ -101,8 +120,12 @@ class AnomalyDetection(object):
             # rmse = math.sqrt(mean_squared_error(data, decoded))
             scores.append(mse)
 
-        # Return mse_list mean value
-        return decoded_instances, scores, targets
+        auc_score = self.calculate_auc(targets, scores)
+        median_mse = int(np.median(scores))
+        fitness_score = auc_score - median_mse
+
+
+        return fitness_score
 
     def calculate_final_mse(self, encoder, decoder):
         decoded_instances = []
@@ -138,8 +161,13 @@ class AnomalyDetection(object):
                 self.FPR_array[i], self.TPR_array[i], thresholds[i] = roc_curve(targets, scores)
                 self.roc_auc[i] = auc(self.FPR_array[i], self.TPR_array[i])
 
-            self.AUC = round(self.roc_auc[0], 3)
+            self.AUC = round(self.roc_auc[0], 5)
 
         except Exception as e:
             print(e)
             self.AUC = 0.0
+
+        auc_score = int(self.AUC * 10000)
+        median_mse = int(np.median(scores))
+        fitness_score = auc_score - median_mse
+        return fitness_score

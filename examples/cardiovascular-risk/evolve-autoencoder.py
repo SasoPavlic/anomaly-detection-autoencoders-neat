@@ -26,8 +26,8 @@ global saving_path
 def eval_genomes(genomes, config, generation):
     for genome_id, genome in genomes:
         encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(genome, config)
-        decoded_instances, scores, targets = anomaly_detection.calculate_mse(encoder, decoder, generation)
-        genome.fitness = int(np.median(scores))
+        fitness_score = anomaly_detection.calculate_fitness(encoder, decoder, generation)
+        genome.fitness = int(fitness_score) #int(np.median(scores))
 
 
 class NeatOutlier:
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                         dest="curriculum_levels",
                         metavar='STRING',
                         help='curriculum_levels',
-                        default='two')
+                        default='three')
 
     args = parser.parse_args()
 
