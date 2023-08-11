@@ -5,6 +5,7 @@ are generally intended to  provide information to the user, store checkpoints, e
 from __future__ import division, print_function
 
 import time
+from datetime import datetime
 
 from neat.math_util import mean, stdev
 
@@ -125,6 +126,9 @@ class StdOutReporter(BaseReporter):
             print("Generation time: {0:.3f} sec ({1:.3f} average)".format(elapsed, average))
         else:
             print("Generation time: {0:.3f} sec".format(elapsed))
+
+        checkpoint_time = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
+        print(f"Checkpoint time: {checkpoint_time}")
 
     def post_evaluate(self, config, population, species, best_genome):
         # pylint: disable=no-self-use

@@ -114,7 +114,7 @@ class Population(object):
             if self.best_genome is None or best.fitness > self.best_genome.fitness:
                 self.best_genome = best
                 encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.best_genome, config)
-                fitness_score = anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
+                fitness_score, mse_results = anomaly_detection.calculate_roc_auc_curve(encoder, decoder)
                 self.best_fitness = int(fitness_score)
                 self.best_generation = k
 

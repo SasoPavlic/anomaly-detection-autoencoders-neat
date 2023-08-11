@@ -1,8 +1,10 @@
 from configparser import ConfigParser
 
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve, mean_squared_error
+import seaborn as sns
 
 from neat.config import Config
 
@@ -20,17 +22,33 @@ class AnomalyDetectionConfig(Config):
         self.data_percentage = float(config.get('AnomalyDetection', 'data_percentage'))
         self.test_size = float(config.get('AnomalyDetection', 'test_size'))
 
-
+# TODO Rename class to CurriculumAnomalyDetection
 class AnomalyDetection(object):
 
     def __init__(self, X_train, X_test, y_train, y_test, valid_label, anomaly_label, all_generations,
                  curriculum_levels):
         # TODO make it more efficient
         # Convert pandas dataframe to numpy array [:-1] to remove label column Level
-        self.train_X_array = X_train.to_numpy()
-        self.train_Y_array = y_train.to_numpy()
+        # self.train_X_array = X_train  # .to_numpy()
+        # self.train_Y_array = y_train  # .to_numpy()
+
+        if curriculum_levels == 'three':
+            # Filter dataframe by column value
+            self.df_easy_three = X_train[X_train['Level'] == 'Easy']
+            self.df_medium_three = X_train[X_train['Level'] == 'Medium']
+            self.df_hard_three = X_train[X_train['Level'] == 'Hard']
+
+        elif curriculum_levels == 'two':
+            self.df_easy_two = X_train[X_train['Level'] == 'Easy']
+            self.df_hard_two = X_train[X_train['Level'] == 'Hard']
+
+        else:
+            self.df_zero = X_train
+
         self.test_X_array = X_test.to_numpy()
         self.test_Y_array = y_test
+
+
 
         self.valid_label = valid_label
         self.anomaly_label = anomaly_label
@@ -43,6 +61,8 @@ class AnomalyDetection(object):
         self.TPR_array = None
         self.roc_auc = None
         self.AUC = None
+        self.MSE = None
+        self.test_counter = 0
 
     def calculate_auc(self, targets, scores):
         try:
@@ -68,49 +88,34 @@ class AnomalyDetection(object):
         decoded_instances = []
         scores = []
         targets = []
-        data = None
+        df = None
 
-        for x, y in zip(self.train_X_array, self.train_Y_array):
+        # TODO make generation percentage parametric
+        gen_percentage = generation / self.all_generations * 100
 
-            gen_percentage = generation / self.all_generations * 100
+        if self.curriculum_levels == 'three':
 
-            if self.curriculum_levels == 'zero':
-                data = x[:-1]
+            if gen_percentage <= 40:
+                df = self.df_easy_three
 
+            elif 40 < gen_percentage <= 65:
+                df = self.df_medium_three
 
-            # TODO make generation percentage parametric
+            elif gen_percentage > 65:
+                df = self.df_hard_three
 
-            elif self.curriculum_levels == 'two':
-                if gen_percentage <= 50:
-                    if x[-1] == 'Easy':
-                        data = x[:-1]
-                    else:
-                        continue
-                elif gen_percentage > 50:
-                    if x[-1] == 'Hard':
-                        data = x[:-1]
-                    else:
-                        continue
+        elif self.curriculum_levels == 'two':
 
-            elif self.curriculum_levels == 'three':
-                if gen_percentage <= 40:
-                    if x[-1] == 'Easy':
-                        data = x[:-1]
-                    else:
-                        continue
+            if gen_percentage <= 50:
+                df = self.df_easy_two
+            elif gen_percentage > 50:
+                df = self.df_hard_two
 
-                elif 40 < gen_percentage <= 65:
-                    if x[-1] == 'Medium':
-                        data = x[:-1]
-                    else:
-                        continue
+        elif self.curriculum_levels == 'zero':
+            df = self.df_zero
 
-                elif gen_percentage > 65:
-                    if x[-1] == 'Hard':
-                        data = x[:-1]
-                    else:
-                        continue
-
+        for x, y in zip(df.to_numpy(), df['Heart_Disease']):
+            data = x[2:-1]
             bottle_neck = encoder.activate(data)
             decoded = decoder.activate(bottle_neck)
 
@@ -124,7 +129,6 @@ class AnomalyDetection(object):
         median_mse = int(np.median(scores))
         fitness_score = auc_score - median_mse
 
-
         return fitness_score
 
     def calculate_final_mse(self, encoder, decoder):
@@ -133,7 +137,7 @@ class AnomalyDetection(object):
         targets = []
         data = None
         for x, y in zip(self.test_X_array, self.test_Y_array):
-            data = x[:-1]
+            data = x[2:-1]
 
             bottle_neck = encoder.activate(data)
             decoded = decoder.activate(bottle_neck)
@@ -142,7 +146,7 @@ class AnomalyDetection(object):
             targets.append(y)
             mse = mean_squared_error(data, decoded)
             # rmse = math.sqrt(mean_squared_error(data, decoded))
-            scores.append(mse)
+            scores.append(round(mse, 2))
 
         # Return mse_list mean value
         return decoded_instances, scores, targets
@@ -168,6 +172,6 @@ class AnomalyDetection(object):
             self.AUC = 0.0
 
         auc_score = int(self.AUC * 10000)
-        median_mse = int(np.median(scores))
-        fitness_score = auc_score - median_mse
-        return fitness_score
+        self.MSE = int(np.median(scores))
+        fitness_score = auc_score - self.MSE
+        return fitness_score, scores

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import copy
+import csv
 import math
 import warnings
 
@@ -12,6 +13,10 @@ import pandas as pd
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc
 
+
+def save_test_mse_results(results, filename='./logs/test_mse_results.csv'):
+    df = pd.DataFrame(results, columns=['MSE'])
+    df.to_csv(filename, index=False)
 
 def plot_stats(statistics, ylog=False, view=False, filename='./logs/avg_fitness.svg'):
     """ Plots the population's average and best fitness. """

@@ -27,7 +27,7 @@ def eval_genomes(genomes, config, generation):
     for genome_id, genome in genomes:
         encoder, decoder = neat.nn.FeedForwardNetwork.create_autoencoder(genome, config)
         fitness_score = anomaly_detection.calculate_fitness(encoder, decoder, generation)
-        genome.fitness = int(fitness_score) #int(np.median(scores))
+        genome.fitness = int(fitness_score)  # int(np.median(scores))
 
 
 class NeatOutlier:
@@ -60,10 +60,24 @@ class NeatOutlier:
 
         return self
 
+    def predict(self, model_path):
+        file = open(model_path, mode="rb")
+        self.winner = pickle.load(file)
+        self.encoder, self.decoder = neat.nn.FeedForwardNetwork.create_autoencoder(self.winner, self.config)
+        return self
+
+    # TODO Add checkointing between generations
+
+
+# Sources:
+# https://neat-python.readthedocs.io/en/latest/neat_overview.html
+# https://neat-python.readthedocs.io/en/latest/_modules/checkpoint.html
+# https://www.programcreek.com/python/example/112263/neat.Checkpointer
 
 if __name__ == '__main__':
     start = datetime.now().strftime("%H:%M:%S-%d/%m/%Y")
     print(f"Program start... {start}")
+    print(f"Run UUID: {RUN_UUID}")
 
     parser = argparse.ArgumentParser(description='Generic runner for Convolutional AE models')
     parser.add_argument('--config', '-c',
@@ -81,7 +95,7 @@ if __name__ == '__main__':
                         dest="curriculum_levels",
                         metavar='STRING',
                         help='curriculum_levels',
-                        default='three')
+                        default='two')
 
     args = parser.parse_args()
 
@@ -95,6 +109,12 @@ if __name__ == '__main__':
     # Split the data into X levels of difficulty
     data, target = data_loader.curriculum_cvd_dataset(filename=args.dataset, levels=args.curriculum_levels,
                                                       percentage=config.data_percentage)
+
+    # Print config file content
+    print(f"Generations: {config.generations}\n"
+          f"Population size: {config.pop_size}\n"
+          f"Data percentage: {config.data_percentage}\n"
+          f"Test size: {config.test_size}\n")
 
     """
         Since we are interested to perform unsupervised* anomaly detection, we will help
@@ -136,19 +156,23 @@ if __name__ == '__main__':
 
     """Perform neuroevolution on training dataset"""
     NO = neat_outlier.fit(saving_path=saving_path)
+    #NO = neat_outlier.predict(f"path_to_best_model\best_model.pkl")
 
     """Plotting results from anomaly detection on graph"""
 
-    anomaly_detection.calculate_roc_auc_curve(neat_outlier.encoder, neat_outlier.decoder)
+    fitness_score, mse_results = anomaly_detection.calculate_roc_auc_curve(neat_outlier.encoder, neat_outlier.decoder)
     print(f"=====================================")
-    print(f"Model AUC score: {anomaly_detection.AUC}")
+    print(
+        f"Model AUC score: {anomaly_detection.AUC} with MSE: {anomaly_detection.MSE} test counter: {anomaly_detection.test_counter}")
+
+    # visualize.save_test_mse_results(mse_results, filename=saving_path + "/test_mse_results.csv")
 
     visualize.optimal_roc_curve(neat_outlier.encoder, neat_outlier.decoder, anomaly_detection, True,
                                 filename=saving_path + "/optimal_roc_curve.svg")
 
-    # visualize.plot_roc_curve(anomaly_detection.roc_auc, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True,
-    #                          filename=saving_path + "/roc_curve.svg")
-    # visualize.plot_metrics(anomaly_detection.metrics, True, filename=saving_path + "/metrics.svg")
+    visualize.plot_roc_curve(anomaly_detection.roc_auc, anomaly_detection.FPR_array, anomaly_detection.TPR_array, True,
+                             filename=saving_path + "/roc_curve.svg")
+    visualize.plot_metrics(anomaly_detection.metrics, True, filename=saving_path + "/metrics.svg")
 
     visualize.draw_net_encoder(config, NO.winner.encoder, False,
                                node_colors={key: 'yellow' for key in NO.winner.encoder.nodes},

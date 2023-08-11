@@ -39,10 +39,17 @@ def curriculum_cvd_dataset(filename="../../datasets/CVD_curriculum.csv", levels=
             dataset = dataset.head(int(len(dataset) * percentage))
 
         # Heart_Disease is the target variable and Sum_Columns is not needed (encoded into Level)
-        data = dataset.iloc[:, 1:25].drop(["Heart_Disease"], axis=1).drop(["Sum_Columns"], axis=1)
+        #data = dataset.iloc[:, 1:25]#.drop(["Heart_Disease"], axis=1).drop(["Sum_Columns"], axis=1)
         target = dataset["Heart_Disease"]
 
-    return data, target
+        dataset = dataset.drop('Unnamed: 0', axis=1)
+        heart_disease = dataset.pop("Heart_Disease")
+        dataset.insert(0, "Heart_Disease", heart_disease)
+
+        sum_columns = dataset.pop("Sum_Columns")
+        dataset.insert(0, "Sum_Columns", sum_columns)
+
+    return dataset, target
 
 
 def fault_detection_dataset(filename="../../datasets/CVD_curriculum.csv"):
